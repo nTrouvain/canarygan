@@ -2,13 +2,9 @@
 # Licence: MIT License
 # Copyright: Nathan Trouvain
 import pathlib
-from typing import Any
 import warnings
 
 import lightning as pl
-import torch
-import torch.nn.functional as F
-import torchmetrics
 
 from lightning.pytorch.callbacks import (
     ModelCheckpoint,
@@ -18,137 +14,9 @@ from lightning.pytorch.callbacks import (
 )
 from lightning.pytorch.loggers import TensorBoardLogger, CSVLogger
 
-from .model import SyllableClassifier
+from .model import LightningSyllableClassifier
 from ..dataset import Canary16kDataModule
 from ..utils import prepare_checkpoints
-
-
-class LightningSyllableClassifier(pl.LightningModule):
-    def __init__(
-        self,
-        n_classes=16,
-        sample_rate=16000,
-        n_fft=1024,
-        win_length=1024,
-        hop_length=128,
-        f_min=40,
-        f_max=7800,
-        n_mels=128,
-        pad_mode="constant",
-        center=True,
-        lr=1e-4,
-        seed=4862,
-    ):
-        super().__init__()
-
-        self.save_hyperparameters()
-
-        self.classifier = SyllableClassifier(
-            n_classes=n_classes,
-            sample_rate=sample_rate,
-            n_fft=n_fft,
-            win_length=win_length,
-            hop_length=hop_length,
-            f_min=f_min,
-            f_max=f_max,
-            n_mels=n_mels,
-            pad_mode=pad_mode,
-            center=center,
-        )
-
-        self.train_accuracy = torchmetrics.classification.Accuracy(
-            task="multiclass", num_classes=n_classes
-        )
-        self.val_accuracy = torchmetrics.classification.Accuracy(
-            task="multiclass", num_classes=n_classes
-        )
-
-        self.train_f1_score = torchmetrics.classification.F1Score(
-            task="multiclass",
-            num_classes=n_classes,
-        )
-        self.val_f1_score = torchmetrics.classification.F1Score(
-            task="multiclass",
-            num_classes=n_classes,
-        )
-
-        self.test_accuracy = torchmetrics.classification.Accuracy(
-            task="multiclass", num_classes=n_classes
-        )
-        self.test_f1_score = torchmetrics.classification.F1Score(
-            task="multiclass",
-            num_classes=n_classes,
-        )
-
-    def forward(self, x):
-        y_pred = self.classifier(x)
-        return torch.argmax(F.softmax(y_pred, dim=1), dim=1)
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-        logits = self.classifier(x)
-        loss = F.cross_entropy(logits, y)
-        y_pred = torch.argmax(logits, dim=1)
-
-        self.log(
-            "train_loss",
-            loss,
-            prog_bar=True,
-            on_step=True,
-            on_epoch=True,
-            sync_dist=True,
-        )
-
-        self.train_accuracy(y_pred, y)
-        self.train_f1_score(y_pred, y)
-
-        # No need to sync_dist, torchmetrics handles the sync for us
-        self.log(
-            "train_acc", self.train_accuracy, on_step=True, on_epoch=True, prog_bar=True
-        )
-        self.log("train_f1", self.train_f1_score, on_step=True, on_epoch=True)
-
-    def validation_step(self, batch, batch_idx):
-        x_val, y_val = batch
-        logits = self.classifier(x_val)
-        loss = F.cross_entropy(logits, y_val)
-        y_pred = torch.argmax(logits, dim=1)
-
-        self.log("val_loss", loss, on_step=False, on_epoch=True, sync_dist=True)
-
-        self.val_accuracy(y_pred, y_val)
-        self.val_f1_score(y_pred, y_val)
-
-        self.log(
-            "val_acc",
-            self.val_accuracy,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=True,
-        )
-        self.log("val_f1", self.val_f1_score, on_step=False, on_epoch=True)
-
-    def test_step(self, batch, batch_idx):
-        x_test, y_test = batch
-        logits = self.classifier(x_test)
-        loss = F.cross_entropy(logits, y_test)
-        y_pred = torch.argmax(logits, dim=1)
-
-        self.log("test_loss", loss, sync_dist=True)
-
-        self.test_accuracy(y_pred, y_test)
-        self.test_f1_score(y_pred, y_test)
-
-        self.log("test_acc", self.test_accuracy)
-        self.log("test_f1", self.test_f1_score)
-
-    def predict_step(self, batch, batch_idx) -> Any:
-        return self.classifier(batch)
-
-    def configure_optimizers(self):
-        lr = self.hparams.lr
-        opt = torch.optim.SGD(self.classifier.parameters(), lr=lr)
-        return opt
 
  
 def train(
@@ -167,6 +35,55 @@ def train(
     dry_run=False,
     early_stopping=False,
 ):
+    """
+    Train a syllable classifier.
+
+    This function may optimally be used in a distributed setup,
+    as described in Lightning documentation. It should however also
+    work locally, by setting "num_nodes=1" and "devices=1".
+
+    Parameters
+    ----------
+    save_dir : str or Path
+        Directory where weights checkpoints and training logs will
+        be saved.
+    data_dir : str or Path
+        Path to Canary 16k syllables dataset.
+    max_epochs : int, default to 1000
+        Maximum number of training epochs.
+    batch_size : int, default to 64
+        Training batch size, per node. If training in a 
+        distributed setup, each node will receive a batch of
+        size batch_size.
+    devices : int, default to 1
+        Number of training devices per node. If each node has
+        two GPUs, then devices=2.
+    num_nodes : int, default to 1
+        Number of compute nodes allocated for this run. If num_nodes=2,
+        then 2 nodes out of all allocated compute nodes will be used
+        for training this instance. See Lightning documentation for
+        more information on how to perform distributed training.
+    num_workers : int, default to 12,
+        Number of processes to attach to each device to load data.
+    log_every_n_steps : int, default to 100
+        Metrics logging period, in number of training steps (batches).
+        Logs are stored as Tensorboard log files and CSV files.
+    save_every_n_epochs : int, default to 1
+        Checkpoint period, in number of epochs.
+    save_topk : int, default to 5
+        Number of checkpoints to keep based on best validation accuracy.
+    resume : bool, default to True
+        Restart training from last available checkpoint.
+    seed : int, default to 0
+        Random state seed. Note that perfect reproducibility is not
+        ensured.
+    dry_run : bool, default to False
+        If True, save results in a scratch directory. This directory will be 
+        overwritten if another dry run is launched.
+    early_stopping : bool, default to False
+        If True, enable early stopping based on validation accuracy.
+        Patience is set to 100 steps and minimum accuracy delta to 0.001.
+    """
     pl.seed_everything(seed, workers=True)
 
     save_dir = pathlib.Path(save_dir)
