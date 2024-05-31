@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+#!/usr/bin/env bash
+#SBATCH -J train-gan
+#SBATCH --constraint="v100|p100"
+#SBATCH --array=1,5,8,9,13,14,16,18%2
+#SBATCH --nodes=4
+#SBATCH --ntasks-per-node=2
+#SBATCH --cpus-per-task=8
+#SBATCH --exclusive
+#SBATCH --time=22:00:00
+#SBATCH --output=slurm/stdout/traingan-%A-%a.out
+#SBATCH --mail-type=END
+#SBATCH --mail-user=nathan.trouvain@inria.fr
+
+echo "=====probegpu information ===="
+echo "Node List: $SLURM_NODELIST"
+echo "Job ID: $SLURM_JOB_ID"
+echo "Partition: $SLURM_JOB_PARTITION"
+echo "Submit directory: $SLURM_SUBMIT_DIR"
+echo "Submit host: $SLURM_SUBMIT_HOST"
+echo "In the directory: $PWD"
+echo "As the user: $USER"
+
+echo "Loading modules"
+module load compiler/cuda/11.7
+module load language/python/3.9.6
+
+echo"==========CUDAinfo==========="
+echo "CUDA info (from nvcc output)"
+nvcc --version
+
+echo "=========Python setup========="
+echo "python : $(python3 --version), $(which python3)"
+echo "pip    : $(pip3 --version), $(which pip3)"
+
+echo "venv activation"
+source ./venv/bin/activate
+
+echo "(venv) python : $(python3 --version), $(which python3)"
+echo "(venv) pip    : $(pip3 --version), $(which pip3)"
+
+echo "======PyTorch GPU status======"
+for i in $(seq 1 "$SLURM_JOB_NUM_NODES"); do
+    srun -N1 -n1 python3 ./slurm/probegpu.py &
+done
+wait
+
+echo "========Lightning CanaryGAN========"
+srun python3 train_gan.py \
+    --save_dir /beegfs/ntrouvai/canarygan/ \
+    --data_dir /beegfs/ntrouvai/canarygan/dataset \
+    --max_epochs 2000 \
+    --batch_size 128 \
+    -G "$SLURM_NTASKS_PER_NODE" \
+    -c "$SLURM_CPUS_PER_TASK" \
+    -N "$SLURM_JOB_NUM_NODES" \
+    --seed 4862 \
+    --log_every_n_step 1 \
+    --save_every_n_epochs 15 \
+    --resume \
+    --version "$SLURM_ARRAY_TASK_ID" \
+
+echo "Done !"

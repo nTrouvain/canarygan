@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#SBATCH -J train-dec
+#SBATCH --constraint="intel"
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=24
+#SBATCH --time=01:00:00
+#SBATCH --output=slurm/stdout/traindecoder%A-%a.out
+#SBATCH --mail-type=END
+#SBATCH --mail-user=nathan.trouvain@inria.fr
+
+set -e
+
+echo "Loading modules"
+module load language/python/3.9.6
+
+echo "=========Python setup========="
+echo "python : $(python3 --version), $(which python3)"
+echo "pip    : $(pip3 --version), $(which pip3)"
+
+echo "venv activation"
+source ./venv/bin/activate
+
+echo "(venv) python : $(python3 --version), $(which python3)"
+echo "(venv) pip    : $(pip3 --version), $(which pip3)"
+echo "(venv) rpy    : $(pip3 show reservoirpy)"
+
+tmpdir="/beegfs/ntrouvai/canarygan/tmp-$(hostname)"
+mkdir -p $tmpdir
+export TMPDIR=$tmpdir
+
+srun python -c "import tempfile;print(tempfile.gettempdir())"
+
+srun python train_decoder.py \
+    --preprocessed_dir /beegfs/ntrouvai/canarygan/decoder_ckpt_classic \
+    --save_dir /beegfs/ntrouvai/canarygan/decoder/checkpoints \
+    --dim 20 \
+
+echo "Done !"

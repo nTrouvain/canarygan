@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#SBATCH -J train-inception
+#SBATCH --constraint="a100|v100|p100"
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=2
+#SBATCH --cpus-per-task=8
+#SBATCH --exclusive
+#SBATCH --time=2:00:00
+
+echo "=====probegpu information ===="
+echo "Node List: " $SLURM_NODELIST
+echo "Job ID: " $SLURM_JOB_ID
+echo "Partition: " $SLURM_JOB_PARTITION
+echo "Submit directory:" $SLURM_SUBMIT_DIR
+echo "Submit host: " $SLURM_SUBMIT_HOST
+echo "In the directory: " $PWD
+echo "As the user: " $USER
+
+echo "Loading modules"
+module load compiler/cuda/11.7
+module load language/python/3.9.6
+
+echo "==========CUDA info==========="
+echo "CUDA info (from nvcc output)"
+nvcc --version
+
+echo "=========Python setup========="
+echo "python : $(python3 --version), $(which python3)"
+echo "pip    : $(pip3 --version), $(which pip3)"
+
+echo "venv activation"
+source ./venv/bin/activate
+
+echo "(venv) python : $(python3 --version), $(which python3)"
+echo "(venv) pip    : $(pip3 --version), $(which pip3)"
+
+echo "======PyTorch GPU status======"
+srun python3 ./slurm/probegpu.py
+
+echo "========Lightning CanaryGAN========"
+srun python3 train_inception.py \
+    --save_dir /beegfs/ntrouvai/canarygan/inception/ \
+    --data_dir /beegfs/ntrouvai/canarygan/dataset \
+    --max_epochs 1000 \
+    --batch_size 128 \
+    -G "$SLURM_NTASKS_PER_NODE" \
+    -c "$SLURM_CPUS_PER_TASK" \
+    -N "$SLURM_JOB_NUM_NODES" \
+    --seed 4862 \
+    --log_every_n_step 1 \
+    --dry_run \
+
+echo "Done !"

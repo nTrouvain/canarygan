@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+#SBATCH -J generate
+#SBATCH --constraint="a100|v100|p100"
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=2
+#SBATCH --cpus-per-task=12
+#SBATCH --array=1,5,8,9,13,14,16,18%2
+#SBATCH --time=24:00:00
+#SBATCH --output=slurm/stdout/generate-%A-%a.out
+#SBATCH --mail-type=END
+#SBATCH --mail-user=nathan.trouvain@inria.fr
+
+set -e
+
+echo "Loading modules"
+module load compiler/cuda/11.7
+module load language/python/3.9.6
+
+echo "==========CUDA info==========="
+echo "CUDA info (from nvcc output)"
+nvcc --version
+
+echo "=========Python setup========="
+echo "python : $(python3 --version), $(which python3)"
+echo "pip    : $(pip3 --version), $(which pip3)"
+
+echo "venv activation"
+source ./venv/bin/activate
+
+echo "(venv) python : $(python3 --version), $(which python3)"
+echo "(venv) pip    : $(pip3 --version), $(which pip3)"
+
+echo "======PyTorch GPU status======"
+for i in $(seq 1 "$SLURM_JOB_NUM_NODES"); do
+    srun -N1 -n1 python3 ./slurm/probegpu.py &
+done
+wait
+
+t=$((SLURM_ARRAY_TASK_ID))
+
+SOURCE_DIR="/beegfs/ntrouvai/canarygan"
+
+for e in 014 029 044 149 299 314 449 554 614 704 809 899 989 1514 1994; do
+  for i in $(seq 0 1); do
+      if [[ -z $(find $SOURCE_DIR/generation/version_$((t+i))/ -name "*epoch_$e-*") ]]; then
+        g=$(find $SOURCE_DIR/checkpoints/version_$((t+i))/all/ -name "*epoch_$e-*") && \
+        srun -n1 -c12 --exclusive python generate.py \
+            --decoder_instance $SOURCE_DIR/decoder/results/checkpoints/decoder-9.pkl \
+            --generator_instance "$g" \
+            --save_dir $SOURCE_DIR/generation/version_$((t+i)) \
+            --batch_size 1000 \
+            --n_samples 10000 \
+            -c "$SLURM_CPUS_PER_TASK" \
+            --device_idx "$i" \
+            &
+      else
+       echo "Already computed: version$((t+i)) epoch $e"
+      fi
+    done
+    wait
+done
+
+echo "Done !"

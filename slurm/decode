@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+#SBATCH -J decode
+#SBATCH --constraint="intel"
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=12
+#SBATCH --array=1,5,8,9,13,14,16,18
+#SBATCH --time=05:00:00
+#SBATCH --output=slurm/stdout/decode-%A-%a.out
+#SBATCH --mail-type=END
+#SBATCH --mail-user=nathan.trouvain@inria.fr
+
+set -e
+
+echo "Loading modules"
+module load language/python/3.9.6
+
+echo "=========Python setup========="
+echo "python : $(python3 --version), $(which python3)"
+echo "pip    : $(pip3 --version), $(which pip3)"
+
+echo "venv activation"
+source ./venv/bin/activate
+
+echo "(venv) python : $(python3 --version), $(which python3)"
+echo "(venv) pip    : $(pip3 --version), $(which pip3)"
+
+t=$((SLURM_ARRAY_TASK_ID))
+
+tmpdir="/beegfs/ntrouvai/canarygan/tmp-$(hostname)"
+mkdir -p $tmpdir
+export TMPDIR=$tmpdir
+
+SOURCE_DIR="/beegfs/ntrouvai/canarygan"
+GEN_DIR="$SOURCE_DIR/generation/version_$t/*.npz"
+
+for f in $GEN_DIR; do
+  srun -n1 -c12 python decode.py "$f" "$SOURCE_DIR/decoder/checkpoints" --features mfcc-classic
+  wait
+done
+
+echo "Done !"

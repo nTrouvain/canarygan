@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+#SBATCH -J norm
+#SBATCH --constraint="intel"
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=16
+#SBATCH --array=0-4
+#SBATCH --ntasks-per-node=2
+#SBATCH --time=5:00:00
+#SBATCH --output=slurm/stdout/norm-%A-%a.out
+#SBATCH --mail-type=END
+#SBATCH --mail-user=nathan.trouvain@inria.fr
+
+set -e
+
+echo "Loading modules"
+module load compiler/cuda/11.7
+module load language/python/3.9.6
+
+echo "=========Python setup========="
+echo "python : $(python3 --version), $(which python3)"
+echo "pip    : $(pip3 --version), $(which pip3)"
+
+echo "venv activation"
+source ./venv/bin/activate
+
+echo "(venv) python : $(python3 --version), $(which python3)"
+echo "(venv) pip    : $(pip3 --version), $(which pip3)"
+
+version=16
+epoch=989
+t=$((SLURM_ARRAY_TASK_ID))
+feature=("spec" "mel" "deltas" "base")
+choice="${feature[$t]}"
+
+echo "$choice"
+
+DATA="/beegfs/ntrouvai/canarygan/decoder/dataset"
+GEN="/beegfs/ntrouvai/canarygan/generation"
+OUT="/beegfs/ntrouvai/canarygan/normalization"
+
+srun -n1 -c16 python test_normalization.py \
+  --data_dir "$DATA" \
+  --gen_dir "$GEN" \
+  --version "$version" \
+  --epoch $epoch \
+  --save_dir "$OUT" \
+  --feature "$choice" \
+  --norm_audio \
+&
+
+srun -n1 -c16 python test_normalization.py \
+  --data_dir "$DATA" \
+  --gen_dir "$GEN" \
+  --version "$version" \
+  --epoch $epoch \
+  --save_dir "$OUT" \
+  --feature "$choice" \
+&
+wait
+
+if [ "$choice" = "deltas" ] || [ "$choice" = "base" ]
+then
+echo "Special MFCC check"
+srun -n1 -c16 python test_normalization.py \
+  --data_dir "$DATA" \
+  --gen_dir "$GEN" \
+  --version "$version" \
+  --epoch $epoch \
+  --save_dir "$OUT" \
+  --feature "$choice" \
+  --norm_audio \
+  --mfcc \
+&
+
+srun -n1 -c16 python test_normalization.py \
+  --data_dir "$DATA" \
+  --gen_dir "$GEN" \
+  --version "$version" \
+  --epoch $epoch \
+  --save_dir "$OUT" \
+  --feature "$choice" \
+  --mfcc \
+&
+wait
+fi
+
+echo "Done!"
