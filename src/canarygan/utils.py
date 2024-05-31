@@ -3,52 +3,6 @@
 # Copyright: Nathan Trouvain
 import shutil
 
-import numpy as np
-import torch
-
-
-def same_padding(input_len, stride, kernel_len):
-    """
-    "Same" padding mode for Pytorch.
-
-    Adapted from https://www.tensorflow.org/api_docs/python/tf/nn
-    """
-    if input_len % stride == 0:
-        return int(np.ceil(max(kernel_len - stride, 0) / 2))
-    else:
-        return int(np.ceil(max(kernel_len - (input_len % stride), 0) / 2))
-
-
-def freeze(module):
-    """
-    Freeze all module parameters, preventing further training.
-    """
-    for p in module.parameters():
-        p.requires_grad = False
-    return module
-
-
-def unfreeze(module):
-    """
-    Allow gradient collection for all module parameters.
-    """
-    for p in module.parameters():
-        p.requires_grad = True
-    return module
-
-
-def interpolate(real_x, fake_x):
-    """
-    Random interpolation of real and generated data,
-    as required by the training policy defined in 
-    Donahue et al. (2018).
-    """
-    alpha = torch.rand_like(real_x)
-    diff = fake_x - real_x
-    interp_x = real_x + (alpha * diff)
-    interp_x.requires_grad = True  # Important! used for gradient penalty
-    return interp_x
-
 
 def prepare_checkpoints(save_dir, version="infer", dry_run=False, resume=False):
     """

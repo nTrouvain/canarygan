@@ -10,19 +10,39 @@ and Aurora Cramer (https://github.com/auroracramer/wavegan).
 
 We recommend using and citing their work if solely trying to play with WaveGAN.
 """
-import logging
-
+import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import lightning as pl
 
 from .losses import WassersteinGP
-from ..utils import interpolate, same_padding
 from .params import SliceLengths
 
 
-logger = logging.getLogger("canarygan/discriminator")
+def same_padding(input_len, stride, kernel_len):
+    """
+    "Same" padding mode for Pytorch.
+
+    Adapted from https://www.tensorflow.org/api_docs/python/tf/nn
+    """
+    if input_len % stride == 0:
+        return int(np.ceil(max(kernel_len - stride, 0) / 2))
+    else:
+        return int(np.ceil(max(kernel_len - (input_len % stride), 0) / 2))
+
+
+def interpolate(real_x, fake_x):
+    """
+    Random interpolation of real and generated data,
+    as required by the training policy defined in 
+    Donahue et al. (2018).
+    """
+    alpha = torch.rand_like(real_x)
+    diff = fake_x - real_x
+    interp_x = real_x + (alpha * diff)
+    interp_x.requires_grad = True  # Important! used for gradient penalty
+    return interp_x
 
 
 class PhaseShuffle(nn.Module):
