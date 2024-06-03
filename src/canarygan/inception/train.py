@@ -36,7 +36,7 @@ def train(
     early_stopping=False,
 ):
     """
-    Train a syllable classifier.
+    Train a syllable classifier for Inception Score computation.
 
     This function may optimally be used in a distributed setup,
     as described in Lightning documentation. It should however also

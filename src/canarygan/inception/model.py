@@ -1,7 +1,5 @@
 # Author: Nathan Trouvain at 10/10/23 <nathan.trouvain<at>inria.fr>
 # Licence: MIT License
-# Copyright: Nathan Trouvain
-# Author: Nathan Trouvain at 29/08/2023 <nathan.trouvain<at>inria.fr>
 import lightning as pl
 import torch
 import torchmetrics
