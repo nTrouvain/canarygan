@@ -1,6 +1,9 @@
 # Author: Nathan Trouvain at 8/30/23 <nathan.trouvain<at>inria.fr>
 # Licence: MIT License
 # Copyright: Nathan Trouvain
+"""
+Dataset related operations for CanaryGAN.
+"""
 import pathlib
 
 import torch
@@ -11,10 +14,13 @@ import numpy as np
 from torch.utils import data
 from sklearn.model_selection import train_test_split
 
-from .params import SliceLengths
+from .gan.params import SliceLengths
 
 
 class DummyNoise(data.Dataset):
+    """
+    Just some random signal, for testing.
+    """
     def __init__(self):
         self.data = torch.rand(16000, 1, SliceLengths.SHORT.value)
 
@@ -26,6 +32,19 @@ class DummyNoise(data.Dataset):
 
 
 class LatentSpaceSamples(data.Dataset):
+    """
+    Generate or load latent vectors for CanaryGAN.
+
+    Parameters
+    ----------
+    vec_file : str, optional
+        Path to a Numpy archive containing latent vectors.
+        If None, random vectors will be generated at runtime.
+    latent_dim : int, default to 3
+        GAN latent space dimension.
+    n_samples : int, default to 50000
+        Number of latent vectors to generate if vec_file is None.
+    """
     def __init__(self, vec_file=None, latent_dim=3, n_samples=50000):
 
         if vec_file is not None:
@@ -48,7 +67,22 @@ class LatentSpaceSamples(data.Dataset):
 
 
 class Canary16kDataset(data.Dataset):
+    """
+    Load and batch real canary syllables.
 
+    Dataset must be provided as directories containing 
+    WAV files, where each directory name is a syllable class name.
+
+    Parameters
+    ----------
+    dataset_path : str
+        Path to dataset root directory.
+    with_classes : bool, default to False
+        If True, will yield class labels alongside audios
+        when iterated (classifier training set). 
+        If False, only provide audio samples 
+        (GAN training set).
+    """
     def __init__(self, dataset_path, with_classes=False):
         self.with_classes = with_classes
         self.dataset_path = dataset_path
@@ -95,6 +129,26 @@ class Canary16kDataset(data.Dataset):
 
 
 class Canary16kDataModule(pl.LightningDataModule):
+    """
+    Utility class to provide Canary16kDataset as a 
+    Lightning compatible object for training the GAN.
+
+    Parameters
+    ----------
+    dataset_path : str
+        Path to dataset root directory.
+    batch_size : int, default to 1
+        Batch size for training/inference.
+    split : bool, default to False
+        If True, will split data into training and test sets.
+    with_classes : bool, default to False
+        If True, will yield class labels alongside audios
+        when iterated (classifier training set). 
+        If False, only provide audio samples 
+        (GAN training set).
+    num_workers : int, optional
+        Number of processes used to load data.
+    """
     def __init__(
         self,
         dataset_path,
