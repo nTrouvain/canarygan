@@ -256,7 +256,6 @@ def preprocess(
             y = load(
                 d,
                 sampling_rate=sampling_rate,
-                max_steps=max_steps,
             )
         else:
             y = d
