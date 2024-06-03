@@ -10,6 +10,8 @@ and Aurora Cramer (https://github.com/auroracramer/wavegan).
 
 We recommend using and citing their work if solely trying to play with WaveGAN.
 """
+from pathlib import Path
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -43,6 +45,36 @@ def interpolate(real_x, fake_x):
     interp_x = real_x + (alpha * diff)
     interp_x.requires_grad = True  # Important! used for gradient penalty
     return interp_x
+
+
+def load_generator(generator_ckpt, device="cpu"):
+    """
+    Load CanaryGAn generator from a saved checkpoint and transfer it
+    to device.
+    """
+    generator_ckpt = Path(generator_ckpt)
+
+    if not generator_ckpt.is_file():
+        raise FileNotFoundError(generator_ckpt)
+
+    ckpt = torch.load(
+        generator_ckpt,
+        map_location=lambda storage, _: (
+            storage.cuda(device) if isinstance(device, int) else storage.cpu()
+        ),
+    )
+    state_dict = {
+        ".".join(k.split(".")[1:]): v
+        for k, v in ckpt["state_dict"].items()
+        if "generator" in k
+    }
+
+    generator = CanaryGANGenerator().to(device)
+
+    status = generator.load_state_dict(state_dict)
+    print(f"Ckpt load status: {str(status)}")
+
+    return generator
 
 
 class PhaseShuffle(nn.Module):

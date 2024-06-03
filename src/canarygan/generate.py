@@ -1,66 +1,19 @@
-from functools import reduce
-from pathlib import Path
 import re
-from matplotlib.pyplot import axis
 
-import torch
+from pathlib import Path
+
 import numpy as np
 import reservoirpy as rpy
 
 from torch.utils import data
-from rich.progress import track
 
-from .utils import load_decoder, load_generator, load_latent_vects, select_device
-from .decoder.decoding import decode, maximum_a_posteriori, reduce_time
+from canarygan.dataset import LatentSpaceSamples
 
-
-def generate(generator, z, device="cpu"):
-    if isinstance(z, np.ndarray):
-        z = torch.as_tensor(z)
-
-    z = z.to(device)
-    z = torch.atleast_2d(z)
-
-    generator.eval()
-
-    with torch.no_grad():
-        x_gen = generator(z)
-
-    return x_gen.squeeze().cpu().numpy()
-
-
-def generate_and_decode(
-    decoder,
-    generator,
-    latent_vects,
-    device="cpu",
-    save_gen=False,
-):
-    rpy.verbosity(0)
-
-    y_gens = []
-    x_gens = []
-    zs = []
-    for z in latent_vects:
-
-        x_gen = generate(generator, z, device)
-
-        if save_gen:
-            x_gens.append(x_gen)
-            zs.append(torch.as_tensor(z))
-
-        y_gen = decode(decoder, x_gen)
-
-        y_gens.append(y_gen)
-
-    y_gens = np.concatenate(y_gens, axis=0)
-
-    if save_gen:
-        x_gens = np.concatenate(x_gens, axis=0)
-        zs = torch.concatenate(zs, dim=0).squeeze().cpu().numpy()
-        return x_gens, y_gens, zs
-
-    return y_gens
+from .utils import select_device
+from .decoder.decode import maximum_a_posteriori, reduce_time
+from .decoder.model import load_decoder
+from .gan.model import load_generator
+from .gan.generate import generate_and_decode
 
 
 def main(
@@ -77,7 +30,7 @@ def main(
     rpy.verbosity(0)
     np.random.seed(0)
 
-    dataset = load_latent_vects(vec_file, n_samples)
+    dataset = LatentSpaceSamples(vec_file, n_samples)
 
     dataloader = data.DataLoader(
         dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers

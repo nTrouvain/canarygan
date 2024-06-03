@@ -122,6 +122,8 @@ def decode(
     if transform_params is not None and not isinstance(transform_params, dict):
         d.load_params(transform_params)
         transform_params = d.transform_kwargs
+    elif transform_params is None:
+        transform_params = d.transform_kwargs
 
     x = preprocess(x, **transform_params)
 

@@ -3,6 +3,23 @@
 # Copyright: Nathan Trouvain
 import shutil
 
+import torch
+
+
+def select_device(device="cpu", device_idx=0):
+    """Select device based on device type and index.
+    By default, select CPU.
+    """
+    if device == "cpu":
+        return device
+
+    if torch.cuda.device_count() > 1:
+        device = f"{device}:{device_idx}"
+    elif torch.cuda.is_available():
+        device = "cuda"
+
+    return device
+
 
 def prepare_checkpoints(save_dir, version="infer", dry_run=False, resume=False):
     """

@@ -4,6 +4,7 @@
 """
 Models of decoder.
 """
+from pathlib import Path
 from typing import Any, List, Dict
 from abc import ABCMeta, abstractmethod
 import dill as pickle
@@ -11,10 +12,22 @@ import dill as pickle
 import numpy as np
 
 from reservoirpy.nodes import ESN, Reservoir, Ridge
-from .decoding import reduce_time
+from .decode import reduce_time
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
+
+
+def load_decoder(decoder_ckpt):
+    """Load a decoder object from a saved checkpoint."""
+    decoder_ckpt = Path(decoder_ckpt)
+    if not decoder_ckpt.is_file():
+        raise FileNotFoundError(f"Decoder: {decoder_ckpt}")
+
+    with open(decoder_ckpt, "rb") as fp:
+        decoder = pickle.load(fp)
+
+    return decoder
 
 
 def build_reservoir(
