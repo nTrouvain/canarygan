@@ -16,7 +16,7 @@ def prepare_checkpoints(save_dir, version="infer", dry_run=False, resume=False):
         Instance ID. If "infer", will increment version number automatically
         based on previous runs stored in save_dir.
     dry_run : bool, default to False
-        If True, save results in a scratch directory. This directory will be 
+        If True, save results in a scratch directory. This directory will be
         overwritten if another dry run is launched.
     resume : bool, default to True
         Use existing checkpoint and log directory to resume training of

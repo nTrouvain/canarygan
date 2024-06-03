@@ -29,11 +29,17 @@ def main(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("Sample GAN latent space and save vectors to disk.")
-    
-    parser.add_argument("save_dir", type=str, help="Directory where vectors will be stored.")
+    parser = argparse.ArgumentParser(
+        "Sample GAN latent space and save vectors to disk."
+    )
+
+    parser.add_argument(
+        "save_dir", type=str, help="Directory where vectors will be stored."
+    )
     parser.add_argument("n_samples", type=int, help="Number of samples to draw.")
-    parser.add_argument("-d", "--dim", type=int, default=3, help="Latent space dimension.")
+    parser.add_argument(
+        "-d", "--dim", type=int, default=3, help="Latent space dimension."
+    )
     parser.add_argument("--seed", type=int, default=0, help="Random state seed.")
 
     args = parser.parse_args()

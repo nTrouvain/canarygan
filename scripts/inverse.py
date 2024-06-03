@@ -42,25 +42,27 @@ def main(
     device,
     device_idx,
 ):
-    
+
     device = select_device(device, device_idx)
     generator = load_generator(generator_ckpt, device=device)
     decoder = load_decoder(decoder_ckpt)
-    
+
     motor_vects = load_latent_vects(vec_file, n_samples=n_samples)
-   
-    last_w, w_history, m_base_register, x_gens, y_ms, class_to_idx, p95 = train_inverse_model(
-        decoder,
-        generator,
-        motor_vects,
-        max_steps=max_steps,
-        eta=eta,
-        w_dist={"low": w_init_low, "high": w_init_high},
-        activation=activation,
-        device=device,
-        eval_every_n_steps=eval_every_n_steps,
+
+    last_w, w_history, m_base_register, x_gens, y_ms, class_to_idx, p95 = (
+        train_inverse_model(
+            decoder,
+            generator,
+            motor_vects,
+            max_steps=max_steps,
+            eta=eta,
+            w_dist={"low": w_init_low, "high": w_init_high},
+            activation=activation,
+            device=device,
+            eval_every_n_steps=eval_every_n_steps,
+        )
     )
-    
+
     save_file = pathlib.Path(save_file)
     save_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -85,4 +87,3 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(**vars(args))
-

@@ -30,6 +30,7 @@ class InceptionScorer(pl.LightningModule):
             Number of dataset splits to evaluate Inception Score
             variance.
     """
+
     def __init__(self, classifier, generator=None, n_split=10):
         super().__init__()
         self.generator = generator
@@ -68,7 +69,7 @@ def baseline_inception_score(
 ):
     """
     Estimate baseline Inception Score (obtained from real data).
-    
+
     Parameters
     ----------
     scorer_ckpt : str
@@ -81,7 +82,7 @@ def baseline_inception_score(
         Number of dataset splits to evaluate Inception Score
         variance.
     batch_size : int, default to 100
-        Training batch size, per node. If training in a 
+        Training batch size, per node. If training in a
         distributed setup, each node will receive a batch of
         size batch_size.
     devices : int, default to 1
@@ -163,7 +164,7 @@ def inception_score(
 ):
     """
     Estimate syllable generator Inception Score.
-    
+
     Parameters
     ----------
     scorer_ckpt : str
@@ -184,7 +185,7 @@ def inception_score(
         Number of dataset splits to evaluate Inception Score
         variance.
     batch_size : int, default to 100
-        Training batch size, per node. If training in a 
+        Training batch size, per node. If training in a
         distributed setup, each node will receive a batch of
         size batch_size.
     devices : int, default to 1
@@ -234,7 +235,9 @@ def inception_score(
 
         generator_ckpt = Path(generator_ckpt)
         generator = CanaryGAN.load_from_checkpoint(generator_ckpt).generator
-        scorer = InceptionScorer(generator=generator, classifier=classifier, n_split=n_split)
+        scorer = InceptionScorer(
+            generator=generator, classifier=classifier, n_split=n_split
+        )
         engine = pl.Trainer(
             accelerator="auto",
             devices=devices,
@@ -252,7 +255,6 @@ def inception_score(
         scores["is_std"].append(is_std)
 
         print(f"IS - epoch {epoch}: {is_mean}±{is_std}")
-
 
     with open(
         f"{str(out_dir)}/is_scores-{Path(generator_version).name}.yml", "w+"

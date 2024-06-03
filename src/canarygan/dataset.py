@@ -23,11 +23,11 @@ class DummyNoise(data.Dataset):
 
     def __getitem__(self, item):
         return self.data[item]
-    
+
 
 class LatentSpaceSamples(data.Dataset):
     def __init__(self, vec_file=None, latent_dim=3, n_samples=50000):
-        
+
         if vec_file is not None:
             self.latent_vects = torch.Tensor(np.load(vec_file))
 
@@ -42,7 +42,7 @@ class LatentSpaceSamples(data.Dataset):
 
     def __len__(self):
         return self.n_samples
-    
+
     def __getitem__(self, item):
         return self.latent_vects[item]
 

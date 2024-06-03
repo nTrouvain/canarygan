@@ -1,4 +1,4 @@
-import pytest 
+import pytest
 import torch
 
 from canarygan.gan.model import CanaryGANDiscriminator, CanaryGANGenerator, CanaryGAN
@@ -42,4 +42,3 @@ def test_generator():
 
             out = generator(z)
             assert out.shape[-1] == slice_len.value
-

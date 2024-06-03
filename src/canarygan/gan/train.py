@@ -52,7 +52,7 @@ def train(
     max_epochs : int, default to 1000
         Maximum number of training epochs.
     batch_size : int, default to 64
-        Training batch size, per node. If training in a 
+        Training batch size, per node. If training in a
         distributed setup, each node will receive a batch of
         size batch_size.
     devices : int, default to 1
@@ -83,7 +83,7 @@ def train(
         Instance ID. If "infer", will increment version number automatically
         based on previous runs stored in save_dir.
     dry_run : bool, default to False
-        If True, save results in a scratch directory. This directory will be 
+        If True, save results in a scratch directory. This directory will be
         overwritten if another dry run is launched.
     """
     pl.seed_everything(seed, workers=True)
@@ -92,7 +92,7 @@ def train(
     data_dir = pathlib.Path(data_dir)
 
     ckpt_dir, tb_dir, csv_dir, curr_version = prepare_checkpoints(
-            save_dir=save_dir, version=version, dry_run=dry_run, resume=resume
+        save_dir=save_dir, version=version, dry_run=dry_run, resume=resume
     )
 
     dataset = data.DataLoader(
@@ -147,7 +147,7 @@ def train(
 
     model = CanaryGAN(seed=seed)
 
-    # Note that this part may need to be adapted depending on the distributed 
+    # Note that this part may need to be adapted depending on the distributed
     # infrastucture you are using.
     trainer = pl.Trainer(
         accelerator="auto",

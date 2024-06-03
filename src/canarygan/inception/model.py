@@ -48,6 +48,7 @@ class SyllableClassifier(nn.Module):
     n_channels : int, default to 128
         Depth of convolution operation.
     """
+
     def __init__(
         self,
         n_classes=16,
@@ -159,6 +160,7 @@ class LightningSyllableClassifier(pl.LightningModule):
     seed : int, default to 0
         Random state seed.
     """
+
     def __init__(
         self,
         n_classes=16,
@@ -190,7 +192,7 @@ class LightningSyllableClassifier(pl.LightningModule):
             pad_mode=pad_mode,
             center=center,
         )
-        
+
         # Logging metrics during training
         self.train_accuracy = torchmetrics.classification.Accuracy(
             task="multiclass", num_classes=n_classes

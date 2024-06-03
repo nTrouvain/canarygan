@@ -35,7 +35,7 @@ def same_padding(input_len, stride, kernel_len):
 def interpolate(real_x, fake_x):
     """
     Random interpolation of real and generated data,
-    as required by the training policy defined in 
+    as required by the training policy defined in
     Donahue et al. (2018).
     """
     alpha = torch.rand_like(real_x)
@@ -51,6 +51,7 @@ class PhaseShuffle(nn.Module):
     by a random integer in {-n, n} and performing reflection padding where
     necessary
     """
+
     def __init__(self, rad, padding="reflect"):
         super(PhaseShuffle, self).__init__()
 
@@ -74,7 +75,7 @@ class CanaryGANDiscriminator(nn.Module):
     Parameters
     ----------
     dim : int, default to 64
-        Internal base dimension.        
+        Internal base dimension.
     nch : int, default to 1
         Number of audio channels.
     kernel_len : int, default to 25
@@ -88,8 +89,9 @@ class CanaryGANDiscriminator(nn.Module):
     alpha : float, default to 0.2
         LeakyReLU negative slope value.
     slice_len : SliceLengths, default to 16384
-        Length of input audio samples, in number of timesteps. 
+        Length of input audio samples, in number of timesteps.
     """
+
     def __init__(
         self,
         dim=64,
@@ -223,6 +225,7 @@ class UpsampleConv1d(nn.Module):
     Without upsampling (upsample = None):
         x -> ConvTranspose1d [ -> BatchNorm ] -> Activation
     """
+
     def __init__(
         self,
         in_channels,
@@ -263,7 +266,7 @@ class CanaryGANGenerator(nn.Module):
     Parameters
     ----------
     dim : int, default to 64
-        Internal base dimension. 
+        Internal base dimension.
     latent_dim : int, default to 3
         Latent space dimension.
     nch : int, default to 1
@@ -275,7 +278,7 @@ class CanaryGANGenerator(nn.Module):
     use_batchnorm : bool, default to False
         If True, apply batch normalization.
     slice_len : SliceLengths, default to 16384
-        Length of input audio samples, in number of timesteps. 
+        Length of input audio samples, in number of timesteps.
     """
 
     def __init__(
@@ -426,16 +429,16 @@ class CanaryGAN(pl.LightningModule):
     """
     WaveGAN as CanaryGAN, as a Pytorch Lightning module for fast distributed training and inference.
 
-    Allows multi-GPU, multi-node training and inference. Has been tested on a cluster equipped with 
+    Allows multi-GPU, multi-node training and inference. Has been tested on a cluster equipped with
     SLURM workload manager.
 
-    Note that it will also work locally on a single-GPU single-node setup. It can also be 
+    Note that it will also work locally on a single-GPU single-node setup. It can also be
     converted to vanilla Pytorch module by loading weights in CanaryGANGenerator or CanaryGANDiscriminator.
 
     Parameters
     ----------
     dim : int, default to 64
-        Internal base dimension. 
+        Internal base dimension.
     latent_dim : int, default to 3
         Latent space dimension.
     nch : int, default to 1
@@ -455,7 +458,7 @@ class CanaryGAN(pl.LightningModule):
     slice_len : SliceLengths, default to 16384
         Length of input audio samples, in number of timesteps.
     critic_update_per_batch : int, default to 5
-        Number of discriminator training steps performed per batch before 
+        Number of discriminator training steps performed per batch before
         updating generator parameters.
     lr : float, default to 1e-4
         Learning rate.
@@ -465,6 +468,7 @@ class CanaryGAN(pl.LightningModule):
         Adam optimizer parameter.
     seed : int, default to 0
     """
+
     def __init__(
         self,
         dim=64,
@@ -523,7 +527,7 @@ class CanaryGAN(pl.LightningModule):
     def training_step(self, batch):
         batch_size = batch.size(0)
         real_x = batch
-        
+
         # We need to instanciate two different optimizers,
         # as discriminator and generator are trained
         # separetely.
@@ -607,4 +611,3 @@ class CanaryGAN(pl.LightningModule):
         g_opt = torch.optim.Adam(self.generator.parameters(), lr=lr, betas=betas)
         c_opt = torch.optim.Adam(self.critic.parameters(), lr=lr, betas=betas)
         return g_opt, c_opt
-

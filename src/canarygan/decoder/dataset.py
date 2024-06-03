@@ -1,19 +1,17 @@
 # Author: Nathan Trouvain at 10/20/23 <nathan.trouvain<at>inria.fr>
 # Licence: MIT License
 # Copyright: Nathan Trouvain
-import joblib
 import yaml
 
 from pathlib import Path
 
 import numpy as np
-import librosa as lbr
 import pandas as pd
 
 from rich.progress import track
 from sklearn.model_selection import train_test_split
 
-from .preprocessing import preprocess
+from .preprocess import preprocess
 
 
 def as_path(path):
@@ -170,13 +168,6 @@ class DecoderDataset:
         self.class_to_idx = {c: i for i, c in enumerate(self.class_labels)}
         self.idx_to_class = {i: c for i, c in enumerate(self.class_labels)}
 
-        # self.data_files = []
-        # self.data_labels = []
-        # for label in self.class_labels:
-        #     files = sorted(self.data_dir.glob(f"{label}/*.wav"))
-        #     self.data_files += files
-        #     self.data_labels += [label] * len(files)
-
         df["feat"] = preprocess(track(df["file"]), **self.transform_kwargs)
 
         train_df, test_df = train_test_split(
@@ -185,22 +176,6 @@ class DecoderDataset:
             stratify=df["label"],
             random_state=self.seed,
         )
-
-        # with joblib.Parallel(n_jobs=-1) as parallel:
-        #     gen = parallel(
-        #         load_and_preprocess(f)
-        #         for f in track(train_files, total=len(train_files))
-        #     )
-        #     train_data, train_labels = zip(*gen)
-
-        # with joblib.Parallel(n_jobs=-1, return_as="generator") as parallel:
-        #     gen = parallel([load_and_preprocess(f) for f in test_files])
-        #     test_data, test_labels = zip(
-        #         *[d for d in track(gen, "Test data", total=len(test_files))]
-        #     )
-
-        # train_data, train_labels = [t[0] for t in train_data_labels], [t[1] for t in train_data_labels]
-        # test_data, test_labels = [t[0] for t in test_data_labels], [t[1] for t in test_data_labels]
 
         self.train_data = (
             get_spec(train_df, feat="feat"),
@@ -247,8 +222,3 @@ class DecoderDataset:
 
         return self
 
-
-if __name__ == "__main__":
-    data_dir = Path("./data/decoder")
-    ckpt_dir = Path("./data/decoder-preprocessed")
-    dataset = DecoderDataset(data_dir=data_dir).get().checkpoint(ckpt_dir)

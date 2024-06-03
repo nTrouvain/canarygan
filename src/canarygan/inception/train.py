@@ -18,7 +18,7 @@ from .model import LightningSyllableClassifier
 from ..dataset import Canary16kDataModule
 from ..utils import prepare_checkpoints
 
- 
+
 def train(
     save_dir,
     data_dir,
@@ -52,7 +52,7 @@ def train(
     max_epochs : int, default to 1000
         Maximum number of training epochs.
     batch_size : int, default to 64
-        Training batch size, per node. If training in a 
+        Training batch size, per node. If training in a
         distributed setup, each node will receive a batch of
         size batch_size.
     devices : int, default to 1
@@ -78,7 +78,7 @@ def train(
         Random state seed. Note that perfect reproducibility is not
         ensured.
     dry_run : bool, default to False
-        If True, save results in a scratch directory. This directory will be 
+        If True, save results in a scratch directory. This directory will be
         overwritten if another dry run is launched.
     early_stopping : bool, default to False
         If True, enable early stopping based on validation accuracy.

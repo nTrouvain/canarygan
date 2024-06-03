@@ -8,7 +8,7 @@ from pmseq.canarygan.inception.score import inception_score, baseline_inception_
 
 parser = argparse.ArgumentParser(
     description="Distributed canaryGAN inception scorer training loop. "
-                "Powered by Ligthning and Pytorch."
+    "Powered by Ligthning and Pytorch."
 )
 
 parser.add_argument(
@@ -16,7 +16,7 @@ parser.add_argument(
     type=str,
     choices=["baseline", "gan"],
     help="Experiment to run: compute baseline IS from dataset "
-    "(baseline) or compute IS or GAN generator (gan)."
+    "(baseline) or compute IS or GAN generator (gan).",
 )
 
 parser.add_argument(
@@ -29,23 +29,21 @@ parser.add_argument(
     "--generator_version", type=str, default=None, help="Dataset root directory."
 )
 parser.add_argument(
-    "--vec_dir", type=str, default=None,
+    "--vec_dir",
+    type=str,
+    default=None,
 )
-parser.add_argument(
-    "--out_dir", type=str
-)
+parser.add_argument("--out_dir", type=str)
 parser.add_argument(
     "--n_samples", type=int, default=50000, help="Max number of training epochs."
 )
 parser.add_argument(
-    "--latent_dim", type=int, default=3,
+    "--latent_dim",
+    type=int,
+    default=3,
 )
-parser.add_argument(
-    "--n_split", type=int, default=10
-)
-parser.add_argument(
-    "--batch_size", type=int, default=100, help="Training batch size."
-)
+parser.add_argument("--n_split", type=int, default=10)
+parser.add_argument("--batch_size", type=int, default=100, help="Training batch size.")
 parser.add_argument(
     "-G", "--devices", type=int, default=1, help="Devices per node used for training."
 )

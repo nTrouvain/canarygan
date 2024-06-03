@@ -34,7 +34,7 @@ if __name__ == "__main__":
         filename = f"gen-{i}_{uid}.wav"
 
         wav.write(
-            output_dir/filename,
+            output_dir / filename,
             sr,
             wave.flatten()[:sr],
         )

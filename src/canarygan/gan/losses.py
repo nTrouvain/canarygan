@@ -11,18 +11,19 @@ class WassersteinGP(nn.Module):
     """
     Wassertein distance loss with gradient penalty, as introduced in
     Gulrajani et al. (2017) and used in WaveGAN (Donahue et al. (2018)).
-    
+
     This code is heavily inspired on the work of Mostafa El Araby
     (https://github.com/mostafaelaraby/wavegan-pytorch)
     and Aurora Cramer (https://github.com/auroracramer/wavegan).
 
     We recommend using and citing their work if solely trying to play with WaveGAN.
-    
+
     Parameters
     ----------
     lmbda : float
-        Slope of gradient penalty function. 
+        Slope of gradient penalty function.
     """
+
     def __init__(self, lmbda):
         super(WassersteinGP, self).__init__()
         self.lmbda = lmbda
@@ -44,7 +45,7 @@ class WassersteinGP(nn.Module):
         """
         # Calculate gradient penalty
         # from Gulrajani et al (2017)
-        # Norm of second order gradients from 
+        # Norm of second order gradients from
         # sound interpolation serve as a penalty.
         gradients = autograd.grad(
             outputs=p_interp,

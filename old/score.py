@@ -88,7 +88,7 @@ def decode(
 
             if isinstance(y_gen, list):
                 y_gen = np.r_[y_gen]
-            
+
             y_gens.append(y_gen)
 
     y_gens = np.concatenate(y_gens, axis=0)
@@ -147,7 +147,7 @@ def score(
 
     save_dir = Path(save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
-    
+
     version = Path(generator_version).stem.split("_")[-1]
 
     all_scores = []
@@ -197,8 +197,11 @@ def score(
         }
         scores.update(class_counts)
 
-        with open(save_dir / f"part-decoder_gan_scores-version_{version}-epoch_{epoch}.yml", "w+") as fp:
-            yaml.dump(scores, fp, Dumper=yaml.Dumper) 
+        with open(
+            save_dir / f"part-decoder_gan_scores-version_{version}-epoch_{epoch}.yml",
+            "w+",
+        ) as fp:
+            yaml.dump(scores, fp, Dumper=yaml.Dumper)
 
         all_scores.append(scores)
 
