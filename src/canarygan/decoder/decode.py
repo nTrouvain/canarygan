@@ -127,6 +127,9 @@ def decode(
 
     x = preprocess(x, **transform_params)
 
+    if isinstance(x, list):
+        x = np.r_[x]
+
     if hasattr(decoder, "predict"):
         y = decoder.predict(x)
     elif hasattr(decoder, "run"):

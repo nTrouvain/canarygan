@@ -14,13 +14,14 @@ import numpy as np
 from torch.utils import data
 from sklearn.model_selection import train_test_split
 
-from .gan.params import SliceLengths
+from .const import SliceLengths
 
 
 class DummyNoise(data.Dataset):
     """
     Just some random signal, for testing.
     """
+
     def __init__(self):
         self.data = torch.rand(16000, 1, SliceLengths.SHORT.value)
 
@@ -45,6 +46,7 @@ class LatentSpaceSamples(data.Dataset):
     n_samples : int, default to 50000
         Number of latent vectors to generate if vec_file is None.
     """
+
     def __init__(self, vec_file=None, latent_dim=3, n_samples=50000):
 
         if vec_file is not None:
@@ -70,7 +72,7 @@ class Canary16kDataset(data.Dataset):
     """
     Load and batch real canary syllables.
 
-    Dataset must be provided as directories containing 
+    Dataset must be provided as directories containing
     WAV files, where each directory name is a syllable class name.
 
     Parameters
@@ -79,10 +81,11 @@ class Canary16kDataset(data.Dataset):
         Path to dataset root directory.
     with_classes : bool, default to False
         If True, will yield class labels alongside audios
-        when iterated (classifier training set). 
-        If False, only provide audio samples 
+        when iterated (classifier training set).
+        If False, only provide audio samples
         (GAN training set).
     """
+
     def __init__(self, dataset_path, with_classes=False):
         self.with_classes = with_classes
         self.dataset_path = dataset_path
@@ -130,7 +133,7 @@ class Canary16kDataset(data.Dataset):
 
 class Canary16kDataModule(pl.LightningDataModule):
     """
-    Utility class to provide Canary16kDataset as a 
+    Utility class to provide Canary16kDataset as a
     Lightning compatible object for training the GAN.
 
     Parameters
@@ -143,12 +146,13 @@ class Canary16kDataModule(pl.LightningDataModule):
         If True, will split data into training and test sets.
     with_classes : bool, default to False
         If True, will yield class labels alongside audios
-        when iterated (classifier training set). 
-        If False, only provide audio samples 
+        when iterated (classifier training set).
+        If False, only provide audio samples
         (GAN training set).
     num_workers : int, optional
         Number of processes used to load data.
     """
+
     def __init__(
         self,
         dataset_path,
@@ -175,14 +179,14 @@ class Canary16kDataModule(pl.LightningDataModule):
         if self.split:
             all_train_idx, test_idx = train_test_split(
                 np.arange(len(dataset)),
-                test_size=1600,  # 100 per class
+                test_size=0.1,  # 100 per class
                 shuffle=True,
                 random_state=4862,
                 stratify=dataset.labels.detach().numpy(),
             )
             train_idx, val_idx = train_test_split(
                 all_train_idx,
-                test_size=800,  # 50 per class
+                test_size=0.05,  # 50 per class
                 shuffle=True,
                 random_state=4862,
                 stratify=dataset.labels[all_train_idx].detach().numpy(),

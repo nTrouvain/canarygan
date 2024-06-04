@@ -3,7 +3,7 @@
 # Copyright: Nathan Trouvain
 from ..canarygan.losses import GPDiscriminatorLoss
 from ..canarygan.discriminator import CanaryGANDiscriminator
-from ..canarygan.params import SliceLengths
+from ..canarygan.const import SliceLengths
 
 import torch
 

@@ -24,7 +24,7 @@ def as_path(path):
 
 def get_spec(df, feat="feat"):
     """Concatenate spectrograms stored in a Pandas DataFrame,
-    in column "feat". """
+    in column "feat"."""
     return np.vstack([s[np.newaxis, ...] for s in df[feat].to_numpy()])
 
 
@@ -81,6 +81,7 @@ class DecoderDataset:
     seed: int, default to 0
         Random state seed.
     """
+
     @classmethod
     def from_checkpoint(cls, checkpoint_dir):
         """
@@ -201,9 +202,9 @@ class DecoderDataset:
         """
         Load and preprocess data.
 
-        If data was already loaded and transformed, 
+        If data was already loaded and transformed,
         no operation will be applied (unless reload is set to True).
-        
+
         This method will populate the "train_data" and "test_data"
         attributes.
 
@@ -314,4 +315,3 @@ class DecoderDataset:
         self.save_params(ckpt_dir / "decoder-dataset.config.yml")
 
         return self
-

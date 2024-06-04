@@ -19,7 +19,7 @@ import torch.nn as nn
 import lightning as pl
 
 from .losses import WassersteinGP
-from .params import SliceLengths
+from ..const import SliceLengths
 
 
 def same_padding(input_len, stride, kernel_len):

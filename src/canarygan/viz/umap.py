@@ -86,7 +86,7 @@ def fetch_generation(gen_dir, version, epoch, redo=False):
     }
 
     gdf = pd.DataFrame(data_table)
-    
+
     # Transform epoch labels for easier visualisation.
     def get_epoch_label(e):
         if e < 300:

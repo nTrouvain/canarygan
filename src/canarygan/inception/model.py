@@ -8,7 +8,7 @@ from torch.nn import functional as F
 from torch import nn
 from torchaudio import transforms
 
-from ..gan.params import SliceLengths
+from ..const import SliceLengths
 
 
 class SyllableClassifier(nn.Module):

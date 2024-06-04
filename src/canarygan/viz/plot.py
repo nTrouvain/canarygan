@@ -14,14 +14,14 @@ import seaborn as sns
 
 from .umap import fetch_dataset, fetch_generation
 from .umap import create_clusters, create_reducer
-from .umap import embed, label_from_cluster 
+from .umap import embed, label_from_cluster
 from .umap import save_umap_dataset, save_umap_generation
 
 
 def plot_mean_spectrograms(save_file, df, label_col="hdbscan_y"):
     """
     Plot mean spectrograms for each syllable label in dataset.
-    
+
     Parameters
     ----------
     save_file : str
@@ -70,13 +70,13 @@ def plot_generation_umap(
     Will also save UMAP projections and cluster labels in generated syllables metadata.
 
     Output plots:
-        - Mean spectrograms per class of syllables (generated) 
+        - Mean spectrograms per class of syllables (generated)
           with and without "X" class,
-        - UMAP plot of real data (kernel density plot) 
+        - UMAP plot of real data (kernel density plot)
           against generated data (scatter plot) colored by decoder label,
         - Same, with HDBSCAN arbitrary labels,
         - Same, with HDBSCAN clusters remapped to real labels.
-    
+
     Parameters
     ----------
     data_dir : str
@@ -85,14 +85,14 @@ def plot_generation_umap(
         Generated data directory.
     version : int
         GAN version to consider in gen_dir.
-    epoch : int 
+    epoch : int
         GAN training epoch to consider in gen_dir.
     save_file : str
         Base filename for figures.
     reducer_ckpt : str, optional
         Path to a trained and saved UMAP object.
     redo : bool, default to False
-        If True, will redo UMAP projections even 
+        If True, will redo UMAP projections even
         if they are already present in gen_dir.
     """
 

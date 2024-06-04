@@ -52,11 +52,14 @@ def prepare_checkpoints(save_dir, version="infer", dry_run=False, resume=False):
         curr_version = "scratch"
     elif version == "infer":
         ckpt_dir = save_dir / "checkpoints"
-        versions = [
-            int(n.stem.split("_")[-1])
-            for n in sorted(ckpt_dir.iterdir())
-            if "version" in str(n)
-        ]
+        if ckpt_dir.exists():
+            versions = [
+                int(n.stem.split("_")[-1])
+                for n in sorted(ckpt_dir.iterdir())
+                if "version" in str(n)
+            ]
+        else:
+            versions = []
 
         if len(versions) == 0:
             curr_version = "version_0"

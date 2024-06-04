@@ -10,10 +10,8 @@ from torch.utils import data
 from canarygan.dataset import LatentSpaceSamples
 
 from .utils import select_device
-from .decoder.decode import maximum_a_posteriori, reduce_time
-from .decoder.model import load_decoder
-from .gan.model import load_generator
-from .gan.generate import generate_and_decode
+from .decoder import maximum_a_posteriori, reduce_time, load_decoder
+from .gan import load_generator, generate_and_decode
 
 
 def main(

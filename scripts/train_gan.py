@@ -3,7 +3,7 @@
 # Copyright: Nathan Trouvain
 import argparse
 
-from pmseq.canarygan.train import train
+from canarygan.gan.train import train
 
 parser = argparse.ArgumentParser(
     description="Distributed canaryGAN training loop. "

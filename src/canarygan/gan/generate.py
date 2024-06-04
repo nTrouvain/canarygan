@@ -1,17 +1,39 @@
+# Author: Nathan Trouvain <nathan.trouvain<at>inria.fr>
+# Licence: MIT License
+# Copyright: Nathan Trouvain
+"""Functions for easy syllable generation and decoding."""
 import torch
 import numpy as np
 import reservoirpy as rpy
 
-from ..decoder.decode import decode 
+from ..decoder.decode import decode
 
 
-def generate(generator, z, device="cpu"):
-    if isinstance(z, np.ndarray):
-        z = torch.as_tensor(z)
+def generate(generator, latent_vects, device="cpu"):
+    """Generate some syllables.
 
-    z = z.to(device)
+    Parameters
+    ----------
+    generator : canarygan.gan.CanaryGANGenerator
+        A syllable generator instance.
+    latent_vects : np.ndarray or torch.Tensor
+        A batch of latent vectors to feed the generator, of shape
+        (samples, latent dim).
+    device : str, default to "cpu"
+        Device on which to perform computations.
+
+    Returns
+    -------
+    np.ndarray
+        Array of shape (samples, audio length). Generated audio.
+    """
+    if isinstance(latent_vects, np.ndarray):
+        latent_vects = torch.as_tensor(latent_vects).float()
+
+    z = latent_vects.to(device)
     z = torch.atleast_2d(z)
-
+    
+    generator.to(device)
     generator.eval()
 
     with torch.no_grad():
@@ -27,24 +49,56 @@ def generate_and_decode(
     device="cpu",
     save_gen=False,
 ):
+    """Generate and label canary syllables.
+
+    Parameters
+    ----------
+    decoder : canarygan.decoder.Decoder
+        A syllable decoder instance.
+    generator : canarygan.gan.CanaryGANGenerator
+        A syllable generator instance.
+    latent_vects : np.ndarray or torch.Tensor
+        A batch or several batches of latent vectors to feed the generator, of shape
+        (samples, latent dim) or (samples, batch size, latent dim).
+    device : str, default to "cpu"
+        Device on which to perform computations.
+    save_gen : bool, default to False
+        If True, function will return generated audio and corresponding latent vectors
+        alongside audio labels. Otherwise, will only return decoded labels.
+
+    Returns
+    -------
+    If save_gen is True:
+    np.ndarray, np.ndarray, np.ndarray
+        Audios, decoded labels and latent vectors arrays.
+    Else:
+    np.ndarray
+        Decoded labels.
+    """
     rpy.verbosity(0)
 
     y_gens = []
     x_gens = []
     zs = []
+
+    if isinstance(latent_vects, (np.ndarray, torch.Tensor)):
+        # Add batch dimension
+        if latent_vects.ndim < 3:
+            latent_vects = latent_vects.reshape(1, -1, latent_vects.shape[-1])
+
     for z in latent_vects:
 
         x_gen = generate(generator, z, device)
-
+        
         if save_gen:
-            x_gens.append(x_gen)
+            x_gens.append(np.atleast_2d(x_gen))
             zs.append(torch.as_tensor(z))
 
-        y_gen = decode(decoder, x_gen)
+        y_gen = decode(decoder, np.atleast_2d(x_gen))
 
         y_gens.append(y_gen)
 
-    y_gens = np.concatenate(y_gens, axis=0)
+    y_gens = np.concatenate(np.atleast_2d(y_gens), axis=0)
 
     if save_gen:
         x_gens = np.concatenate(x_gens, axis=0)
