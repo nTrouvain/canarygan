@@ -3,7 +3,7 @@
 # Copyright: Nathan Trouvain
 import argparse
 
-from canarygan.gan.train import train
+from canarygan.gan import train
 
 parser = argparse.ArgumentParser(
     description="Distributed canaryGAN training loop. "
@@ -56,6 +56,8 @@ parser.add_argument(
     "'scratch' will be emptied before start.",
 )
 
-if __name__ == "__main__":
+
+def main():
     args = parser.parse_args()
     train(**vars(args))
+
