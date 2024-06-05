@@ -32,7 +32,7 @@ def generate(generator, latent_vects, device="cpu"):
 
     z = latent_vects.to(device)
     z = torch.atleast_2d(z)
-    
+
     generator.to(device)
     generator.eval()
 
@@ -48,6 +48,7 @@ def generate_and_decode(
     latent_vects,
     device="cpu",
     save_gen=False,
+    transform_params=None,
 ):
     """Generate and label canary syllables.
 
@@ -65,6 +66,11 @@ def generate_and_decode(
     save_gen : bool, default to False
         If True, function will return generated audio and corresponding latent vectors
         alongside audio labels. Otherwise, will only return decoded labels.
+    transform_params : dict or str, optional
+        Preprocessing parameters. If str, will consider it as a path
+        and load the file as a canarygan.decoder.dataset.Dataset parameter
+        checkpoint file in YAML format. If None, will use
+        canarygan.decoder.dataset.Dataset default values.
 
     Returns
     -------
@@ -89,12 +95,12 @@ def generate_and_decode(
     for z in latent_vects:
 
         x_gen = generate(generator, z, device)
-        
+
         if save_gen:
             x_gens.append(np.atleast_2d(x_gen))
             zs.append(torch.as_tensor(z))
 
-        y_gen = decode(decoder, np.atleast_2d(x_gen))
+        y_gen = decode(decoder, np.atleast_2d(x_gen), transform_params)
 
         y_gens.append(y_gen)
 

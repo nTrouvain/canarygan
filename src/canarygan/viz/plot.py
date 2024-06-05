@@ -7,6 +7,7 @@ GAN quality figures.
 import dill as pickle
 from pathlib import Path
 
+import click
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -56,12 +57,46 @@ def plot_mean_spectrograms(save_file, df, label_col="hdbscan_y"):
     return
 
 
+_help = """Make many plots displaying UMAP projections of real and generated syllables.
+Will also save UMAP projections and cluster labels in generated syllables metadata.
+"""
+
+
+@click.command("umap", help=_help)
+@click.option(
+    "-d",
+    "--data-dir",
+    type=click.Path(exists=True, file_okay=False),
+    required=True,
+    help="Dataset directory.",
+)
+@click.option(
+    "-g",
+    "--gen-dir",
+    type=click.Path(exists=True, file_okay=False),
+    required=True,
+    help="Generated data directory.",
+)
+@click.option(
+    "--reducer-ckpt",
+    type=click.Path(exists=True, dir_okay=False),
+    help="Path to a trained and saved UMAP object.",
+)
+@click.option("--epoch", type=int, required=True, help="GAN instance to consider.")
+@click.option("--version", type=int, required=True, help="Training epoch to consider.")
+@click.option(
+    "-s",
+    "--save-dir",
+    type=click.Path(),
+    required=True,
+    help="Figures output directory.",
+)
 def plot_generation_umap(
     data_dir,
     gen_dir,
     version,
     epoch,
-    save_file,
+    save_dir,
     reducer_ckpt=None,
     redo=False,
 ):
@@ -87,8 +122,8 @@ def plot_generation_umap(
         GAN version to consider in gen_dir.
     epoch : int
         GAN training epoch to consider in gen_dir.
-    save_file : str
-        Base filename for figures.
+    save_dir : str
+        Directory where figures will be saved.
     reducer_ckpt : str, optional
         Path to a trained and saved UMAP object.
     redo : bool, default to False
@@ -96,7 +131,8 @@ def plot_generation_umap(
         if they are already present in gen_dir.
     """
 
-    save_file = Path(save_file)
+    Path(save_dir).mkdir(parents=True, exist_ok=True)
+    save_file = Path(save_dir) / f"umap_plot-version_{version}-epoch_{epoch}.pdf"
 
     gen_df = fetch_generation(gen_dir, version, epoch, redo)
     real_df = fetch_dataset(data_dir)

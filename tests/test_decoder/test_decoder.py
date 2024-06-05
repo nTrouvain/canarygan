@@ -4,7 +4,7 @@ import uuid
 from canarygan.decoder import DecoderDataset, KNNDecoder, SVMDecoder, ESNDecoder, decode
 
 
-@pytest.mark.parametrize("reduce_time_policy",["max","mean","argmax","sum"])
+@pytest.mark.parametrize("reduce_time_policy", ["max", "mean", "argmax", "sum"])
 def test_esn(reduce_time_policy, tmp_dummy_data):
     dataset = DecoderDataset(data_dir=tmp_dummy_data).get()
     decoder = ESNDecoder(reduce_time_policy=reduce_time_policy, name=str(uuid.uuid4()))
@@ -23,9 +23,11 @@ def test_sklearn_decoders(decoder, tmp_dummy_data):
     assert y_pred.shape == dataset.test_data[1].shape
 
 
-@pytest.mark.parametrize("decoder", [ESNDecoder(), KNNDecoder(n_neighbors=5), SVMDecoder()])
+@pytest.mark.parametrize(
+    "decoder", [ESNDecoder(), KNNDecoder(n_neighbors=5), SVMDecoder()]
+)
 def test_decode(decoder, tmp_dummy_data):
-    
+
     dataset = DecoderDataset(data_dir=tmp_dummy_data).get()
     decoder.fit(*dataset.train_data)
 
@@ -33,4 +35,3 @@ def test_decode(decoder, tmp_dummy_data):
     r = decode(decoder, dataset)
 
     assert r.shape == (len(dataset),)
-

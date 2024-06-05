@@ -65,7 +65,6 @@ def baseline_inception_score(
     num_nodes=1,
     num_workers=12,
     seed=0,
-    **kwargs,
 ):
     """
     Estimate baseline Inception Score (obtained from real data).

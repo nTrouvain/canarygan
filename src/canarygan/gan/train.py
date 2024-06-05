@@ -2,7 +2,6 @@
 # Licence: MIT License
 # Copyright: Nathan Trouvain
 import pathlib
-import shutil
 
 import lightning as pl
 

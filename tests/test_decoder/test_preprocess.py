@@ -46,8 +46,8 @@ def test_dataset_params(tmp_save_dir):
     dataset = DecoderDataset()
     dataset.transform_kwargs["sampling_rate"] = 50000
     dataset.save_params(param_file)
-    
+
     dataset = DecoderDataset()
     dataset.load_params(param_file)
-    
+
     assert dataset.transform_kwargs["sampling_rate"] == 50000

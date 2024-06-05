@@ -54,4 +54,3 @@ def test_training(tmp_dummy_data, tmp_save_dir):
 
     assert (tmp_save_dir / "inception" / "checkpoints").exists()
     assert (tmp_save_dir / "inception" / "logs").exists()
-
