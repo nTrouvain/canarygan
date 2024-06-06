@@ -59,6 +59,26 @@ You can display a short description of the interface by running:
 canarygan --help
 ```
 
+You should get the following output:
+
+```
+❯ canarygan --help               
+Usage: canarygan [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  build-decoder-dataset  Preprocess dataset for decoder training.
+  generate               Generate canary syllables using a trained GAN...
+  inception              Compute inception score.
+  sample                 Randomly sample GAN latent space and save...
+  train-decoders         ESN, kNN and SVM decoders training.
+  train-gan              Train a CanaryGAN instance.
+  train-inception        Distributed canaryGAN inception scorer training...
+  umap                   Make many plots displaying UMAP projections of...``
+```
+
 **Note: if you installed `canarygan` manually, you may have to type `python -m canarygan --help` instead.**
 
 
