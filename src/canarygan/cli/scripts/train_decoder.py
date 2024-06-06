@@ -27,26 +27,26 @@ ignored. The dataset and its parameters will be loaded from the checkpoint.
 )
 @click.option(
     "-s",
-    "--save_dir",
+    "--save-dir",
     type=str,
     required=True,
     help="Model directory (checkpoints, logs...).",
 )
 @click.option(
     "-p",
-    "--preprocessed_dir",
+    "--preprocessed-dir",
     type=click.Path(exists=True, file_okay=False),
     help="Preprocessed dataset.",
 )
 @click.option(
     "-d",
-    "--data_dir",
+    "--data-dir",
     type=click.Path(exists=True, file_okay=False),
     help="Dataset directory.",
 )
 @click.option(
     "--reservoirs",
-    "instance_dir",
+    "instance-dir",
     type=click.Path(exists=True, file_okay=False),
     help="Directory containing pickled reservoirpy Reservoir objects to use when creating ESN decoders.",
 )
