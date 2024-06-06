@@ -46,7 +46,7 @@ ignored. The dataset and its parameters will be loaded from the checkpoint.
 )
 @click.option(
     "--reservoirs",
-    "instance-dir",
+    "instance_dir",
     type=click.Path(exists=True, file_okay=False),
     help="Directory containing pickled reservoirpy Reservoir objects to use when creating ESN decoders.",
 )
