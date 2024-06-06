@@ -28,7 +28,6 @@ def train(
     num_workers=12,
     log_every_n_steps=100,
     save_every_n_epochs=15,
-    save_topk=5,
     resume=True,
     seed=0,
     version="infer",
@@ -69,10 +68,6 @@ def train(
         Logs are stored as Tensorboard log files and CSV files.
     save_every_n_epochs : int, default to 15
         Checkpoint period, in number of epochs.
-    save_topk : int, default to 5
-        Number of checkpoints to keep based on best discriminator loss.
-        (this does not work very well, as discriminator loss is not a
-        valid indicator of GAN generation quality).
     resume : bool, default to True
         Restart training from last available checkpoint.
     seed : int, default to 0
@@ -131,18 +126,6 @@ def train(
         save_on_train_epoch_end=True,
         auto_insert_metric_name=False,
     )
-    topk_cktpointer = ModelCheckpoint(
-        dirpath=ckpt_dir / f"top{save_topk}",
-        filename="top_" + cktp_filename,
-        monitor="disc_loss_epoch",
-        mode="max",  # as we monitor critic loss
-        save_top_k=save_topk,
-        every_n_epochs=1,
-        # we don't need to whole training state, just the best weights
-        save_weights_only=True,
-        save_on_train_epoch_end=True,
-        auto_insert_metric_name=False,
-    )
 
     model = CanaryGAN(seed=seed)
 
@@ -158,7 +141,6 @@ def train(
         log_every_n_steps=log_every_n_steps,
         callbacks=[
             epoch_cktpointer,
-            topk_cktpointer,
             last_cktpointer,
             RichModelSummary(max_depth=3),
             RichProgressBar(leave=True),

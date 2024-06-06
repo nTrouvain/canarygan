@@ -87,13 +87,6 @@ Example Usage :
     help="Epochs between 2 checkpoints.",
 )
 @click.option(
-    "--save-topk",
-    type=int,
-    default=5,
-    show_default=True,
-    help="Min rank of best saved checkpoints.",
-)
-@click.option(
     "--seed",
     type=int,
     default=None,

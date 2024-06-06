@@ -12,7 +12,6 @@ def test_training(tmp_dummy_data, tmp_save_dir):
         num_workers=1,
         log_every_n_steps=1,
         save_every_n_epochs=1,
-        save_topk=1,
         resume=False,
         seed=0,
         version="infer",
